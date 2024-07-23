@@ -76,3 +76,52 @@ order by day_number,seller
 )
 select seller, day_of_week, income from tab;
 
+--#6--
+--age-groups
+select
+	case
+		when age between 16 and 25 then '16-25'
+		when age between 26 and 40 then '26-40'
+		when age >40 then '40+'
+	end	as age_category,
+	count(*) as age_count
+from 
+	customers c
+group by age_category
+order by age_category asc;
+
+--customers-by-month
+select
+	to_char(s.sale_date,'YYYY-MM') as selling_month,
+	count(s.customer_id) as total_customers,
+	ceil(sum(s.quantity*p.price)) as income
+from sales s 
+inner join products p 
+on s.product_id = p.product_id
+group by selling_month
+order by selling_month asc;
+
+--special-offer
+with tab as(
+select 
+	(c.first_name || ' ' || c.last_name) as customer,
+	s.customer_id,
+	s.sale_date,
+	(e.first_name || ' ' || e.last_name) as seller,
+	row_number() over (partition by s.customer_id) as sale_number
+from sales s
+inner join customers c 
+on s.customer_id = c.customer_id
+inner join employees e 
+on s.sales_person_id = e.employee_id
+join products p
+on s.product_id = p.product_id
+where p.price= 0
+order by customer_id
+)
+select
+	customer,
+	sale_date,
+	seller
+from tab
+where sale_number =1;
