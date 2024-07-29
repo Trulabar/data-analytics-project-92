@@ -4,8 +4,8 @@ from customers;
 
 --script-top10-sellers
 select
-    (first_name || ' ' || last_name) as seller,
-    COUNT(sales_person_id) as operations,
+    (e.first_name || ' ' || e.last_name) as seller,
+    COUNT(s.sales_person_id) as operations,
     FLOOR(SUM(p.price * s.quantity)) as income
 from
     employees as e
@@ -33,7 +33,7 @@ with avg_all as (
 --average seller income
 avg_seller as (
     select
-        (first_name || ' ' || last_name) as seller,
+        (e.first_name || ' ' || e.last_name) as seller,
         FLOOR(AVG(p.price * s.quantity)) as seller_average_income
     from
         employees as e
@@ -59,7 +59,7 @@ with tab as (
     select
         (e.first_name || ' ' || e.last_name) as seller,
         FLOOR(SUM(p.price * s.quantity)) as income,
-        TO_CHAR(sale_date, 'day') as day_of_week,
+        TO_CHAR(s.sale_date, 'day') as day_of_week,
         EXTRACT(isodow from s.sale_date) as day_number
     from
         employees as e
@@ -115,7 +115,7 @@ with tab as (
         (c.first_name || ' ' || c.last_name) as customer,
         (e.first_name || ' ' || e.last_name) as seller,
         ROW_NUMBER()
-            over (partition by s.customer_id order by sale_date)
+            over (partition by s.customer_id order by s.sale_date)
         as sale_number
     from sales as s
     inner join customers as c
@@ -125,7 +125,7 @@ with tab as (
     inner join products as p
         on s.product_id = p.product_id
     where p.price = 0
-    order by customer_id, sale_date
+    order by s.customer_id, s.sale_date
 )
 
 select
