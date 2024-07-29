@@ -7,7 +7,7 @@ from customers;
 select
 	(first_name || ' ' || last_name) as seller,
 	COUNT(sales_person_id) as operations,
-	ceil(SUM(p.price*s.quantity)) as income
+	floor(SUM(p.price*s.quantity)) as income
 from
 	employees e 
 inner join 
@@ -24,7 +24,7 @@ limit 10;
 --script-below-average-income
 --average over all sellers
 with avg_all as(
-select ceil(AVG(p.price*s.quantity)) as average_overall
+select floor(AVG(p.price*s.quantity)) as average_overall
 from sales s
 join
 	products p
@@ -34,7 +34,7 @@ on s.product_id = p.product_id
  avg_seller AS(
 select
 	(first_name || ' ' || last_name) as seller,
-	ceil(AVG(p.price*s.quantity)) as seller_average_income
+	floor(AVG(p.price*s.quantity)) as seller_average_income
 from
 	employees e 
 join 
@@ -57,7 +57,7 @@ order by seller_average_income;
 with tab as(
 	select
 	(e.first_name || ' ' || e.last_name) as seller,
-	ceil(sum(p.price*s.quantity)) as income,
+	floor(sum(p.price*s.quantity)) as income,
 	to_char(sale_date, 'day') AS day_of_week,
 	extract(ISODOW from s.sale_date) as day_number
 from
@@ -94,7 +94,7 @@ order by age_category asc;
 select
 	to_char(s.sale_date,'YYYY-MM') as selling_month,
 	count(s.customer_id) as total_customers,
-	ceil(sum(s.quantity*p.price)) as income
+	floor(sum(s.quantity*p.price)) as income
 from sales s 
 inner join products p 
 on s.product_id = p.product_id
@@ -108,7 +108,7 @@ select
 	s.customer_id,
 	s.sale_date,
 	(e.first_name || ' ' || e.last_name) as seller,
-	row_number() over (partition by s.customer_id) as sale_number
+	row_number() over (partition by s.customer_id order by sale_date) as sale_number
 from sales s
 inner join customers c 
 on s.customer_id = c.customer_id
@@ -117,7 +117,7 @@ on s.sales_person_id = e.employee_id
 join products p
 on s.product_id = p.product_id
 where p.price= 0
-order by customer_id
+order by customer_id,sale_date
 )
 select
 	customer,
