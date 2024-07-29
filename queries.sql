@@ -93,7 +93,7 @@ order by age_category asc;
 --customers-by-month
 select
 	to_char(s.sale_date,'YYYY-MM') as selling_month,
-	count(s.customer_id) as total_customers,
+	count(distinct s.customer_id) as total_customers,
 	floor(sum(s.quantity*p.price)) as income
 from sales s 
 inner join products p 
